@@ -24,7 +24,7 @@ cmake_minimum_required(VERSION 2.6.0)
 project (VINTERFACE)
 
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -std=c++11 -Wl,--no-undefined")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-variable -Wl,--no-undefined")
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 set (CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -Os")
@@ -32,9 +32,21 @@ set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 
 set (VINTERFACE_LIBRARY vinterface)
 
-file (GLOB VINTERFACE_SOURCES *.cpp)
-file (GLOB VINTERFACE_HEADERS *.h)
-include_directories (../common ../engine ${HL_SDK_DIR}/pm_shared)
+set (VINTERFACE_SOURCES library.cpp
+	vloader.cpp
+	surface.cpp
+	#vgui_controls/Panel.cpp
+	#./SourceSDK/tier1/utlbuffer.cpp
+	#KeyValues.cpp
+	#KeyValuesSystem.cpp\
+)
+#file (GLOB VINTERFACE_HEADERS *.h)
+include_directories ( .
+	../common ../engine ${HL_SDK_DIR}/pm_shared
+	./Interface ./Interface/VGUI ./Interface/VGUI/vgui_controls
+	./SourceSDK ./SourceSDK/tier1 ./SourceSDK/tier0 )
+add_definitions(-D_LINUX -D_WCHAR_T_DEFINED -Dstricmp=strcasecmp
+	-Dstrnicmp=strncasecmp -D_vsnprintf=vsnprintf -D_snprintf=snprintf -D_snwprintf=snwprintf)
 add_library (${VINTERFACE_LIBRARY} SHARED ${VINTERFACE_SOURCES} ${VINTERFACE_HEADERS})
 
 target_link_libraries(${VINTERFACE_LIBRARY} ${CMAKE_DL_LIBS})

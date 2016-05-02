@@ -104,7 +104,7 @@ enum
 extern "C"
 {
 	EXPORT_FUNCTION IBaseInterface* CreateInterface(const char *pName, int *pReturnCode);
-};
+}
 
 
 extern CreateInterfaceFn	Sys_GetFactoryThis( void );
