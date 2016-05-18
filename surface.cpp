@@ -38,6 +38,16 @@ GNU General Public License for more details.
 #include "Interface/IClientVGUI.h"
 #include "SourceSDK/Color.h"
 
+extern IFileSystem *g_pFullFileSystem;
+extern vgui::IInput *g_pVGuiInput;
+extern vgui::ISchemeManager *g_pVGuiSchemeManager;
+extern vgui::ISurface *g_pVGuiSurface;
+extern vgui::ISystem *g_pVGuiSystem;
+extern vgui::IVGui *g_pVGui;
+extern vgui::IPanel *g_pVGuiPanel;
+extern vgui::ILocalize *g_pVGuiLocalize;
+
+
 #define STUB ( std::cout << "VInterface FIXME: " << __PRETTY_FUNCTION__ << std::endl )
 
 namespace vgui
@@ -47,8 +57,17 @@ class CSurface : public ISurface
 public:
 	void Shutdown(void) { STUB; }
 	void RunFrame(void) { STUB; }
-	VPANEL GetEmbeddedPanel(void) { STUB; return 0; }
-	void SetEmbeddedPanel(VPANEL) { STUB; }
+
+	VPANEL GetEmbeddedPanel(void)
+	{
+		return _embeddedPanel;
+	}
+
+	void SetEmbeddedPanel(VPANEL panel)
+	{
+		_embeddedPanel = panel;
+	}
+
 	void PushMakeCurrent(VPANEL, bool) { STUB; }
 	void PopMakeCurrent(VPANEL) { STUB; }
 	void DrawSetColor(int, int, int, int) { STUB; }
@@ -57,15 +76,32 @@ public:
 	void DrawOutlinedRect(int, int, int, int) { STUB; }
 	void DrawLine(int, int, int, int) { STUB; }
 	void DrawPolyLine(int *, int *, int) { STUB; }
-	void DrawSetTextFont(HFont) { STUB; }
+	void DrawSetTextFont(HFont font)
+	{
+		_currentFont = font;
+	}
 	void DrawSetTextColor(int, int, int, int) { STUB; }
 	void DrawSetTextColor(Color) { STUB; }
 	void DrawSetTextPos(int, int) { STUB; }
 	void DrawGetTextPos(int &, int &) { STUB; }
-	void DrawPrintText(const wchar_t *, int) { STUB; }
+	void DrawPrintText(const wchar_t *text, int textLen)
+	{
+		if( !text )
+			return;
+
+		if( textLen <= 0 )
+			return;
+
+		for( int i = 0; i < textLen; i++ )
+			DrawUnicodeChar(text[i]); // DrawUnicodeCharAdd here?
+		STUB;
+	}
 	void DrawUnicodeChar(wchar_t) { STUB; }
 	void DrawUnicodeCharAdd(wchar_t) { STUB; }
-	void DrawFlushText(void) { STUB; }
+	void DrawFlushText(void)
+	{
+		STUB;
+	}
 	IHTML * CreateHTMLWindow(IHTMLEvents *, VPANEL) { STUB; return NULL; }
 	void PaintHTMLWindow(IHTML *) { STUB; }
 	void DeleteHTMLWindow(IHTML *) { STUB; }
@@ -76,7 +112,12 @@ public:
 	void DrawTexturedRect(int, int, int, int) { STUB; }
 	bool IsTextureIDValid(int) { STUB; return false; }
 	int CreateNewTextureID(bool) { STUB; return 0; }
-	void GetScreenSize(int &, int &) { STUB; }
+	void GetScreenSize(int &width, int &height)
+	{
+		width = 1024;
+		height = 768;
+		STUB;
+	}
 	void SetAsTopMost(VPANEL, bool) { STUB; }
 	void BringToFront(VPANEL) { STUB; }
 	void SetForegroundWindow(VPANEL) { STUB; }
@@ -90,59 +131,163 @@ public:
 	void SwapBuffers(VPANEL) { STUB; }
 	void Invalidate(VPANEL) { STUB; }
 	void SetCursor(HCursor) { STUB; }
-	bool IsCursorVisible(void) { STUB; return false; }
+	bool IsCursorVisible(void)
+	{
+		return !_cursorVisible;
+	}
 	void ApplyChanges(void) { STUB; }
-	bool IsWithin(int, int) { STUB; return false; }
-	bool HasFocus(void) { STUB; return false; }
-	bool SupportsFeature(ISurface::SurfaceFeature_e) { STUB; return false; }
+	bool IsWithin(int, int)
+	{
+		return true;
+	}
+	bool HasFocus(void)
+	{
+		return true;
+	}
+	bool SupportsFeature(ISurface::SurfaceFeature_e feature)
+	{
+		return feature < DROPSHADOW_FONTS;
+	}
 	void RestrictPaintToSinglePanel(VPANEL) { STUB; }
-	void SetModalPanel(VPANEL) { STUB; }
-	VPANEL GetModalPanel(void) { STUB; return 0; }
-	void UnlockCursor(void) { STUB; }
-	void LockCursor(void) { STUB; }
+	void SetModalPanel(VPANEL panel)
+	{
+		_restrictedPanel = panel;
+	}
+	VPANEL GetModalPanel(void)
+	{
+		return _restrictedPanel;
+	}
+
+	void UnlockCursor(void)
+	{
+		_cursorLocked = false;
+	}
+	void LockCursor(void)
+	{
+		_cursorLocked = true;
+	}
 	void SetTranslateExtendedKeys(bool) { STUB; }
 	VPANEL GetTopmostPopup(void) { STUB; return 0; }
 	void SetTopLevelFocus(VPANEL) { STUB; }
-	HFont CreateFont(void) { STUB; return 0; }
-	bool AddGlyphSetToFont(HFont, const char *, int, int, int, int, int, int, int) { STUB; return 0; }
-	bool AddCustomFontFile(const char *) { STUB; return 0; }
-	int GetFontTall(HFont) { STUB; return 0; }
-	void GetCharABCwide(HFont, int, int &, int &, int &) { STUB; }
-	int GetCharacterWidth(HFont, int) { STUB; return 0; }
-	void GetTextSize(HFont, const wchar_t *, int &, int &) { STUB; }
+	HFont CreateFont(void)
+	{
+		STUB;
+		return 0;
+	}
+	bool AddGlyphSetToFont(HFont, const char *, int, int, int, int, int, int, int)
+	{
+		STUB;
+		return 0;
+	}
+	bool AddCustomFontFile(const char *)
+	{
+		STUB;
+		return 0;
+	}
+	int GetFontTall(HFont)
+	{
+		STUB;
+		return 0;
+	}
+	void GetCharABCwide(HFont font, int ch, int &a, int &b, int &c)
+	{
+		a = b = c = 0;
+		STUB;
+	}
+	int GetCharacterWidth(HFont font, int ch)
+	{
+		STUB;
+		return 0;
+	}
+	void GetTextSize(HFont font, const wchar_t *text, int &wide, int &tall)
+	{
+		wide = tall = 0;
+		STUB;
+	}
 	VPANEL GetNotifyPanel(void) { STUB; return 0; }
 	void SetNotifyIcon(VPANEL, HTexture, VPANEL, const char *) { STUB; }
-	void PlaySound(const char *) { STUB; }
+	void PlaySound(const char *filename)
+	{
+		//gEngfuncs.pfnPlaySoundByName(filename, 1.0f);
+	}
 	int GetPopupCount(void) { STUB;return 0; }
 	VPANEL GetPopup(int) { STUB;  return 0; }
 	bool ShouldPaintChildPanel(VPANEL) { STUB; return 0; }
 	bool RecreateContext(VPANEL) { STUB; return 0; }
-	void AddPanel(VPANEL) { STUB; }
-	void ReleasePanel(VPANEL) { STUB; }
+	void AddPanel(VPANEL panel)
+	{
+		//STUB;
+	}
+	void ReleasePanel(VPANEL panel)
+	{
+		STUB;
+	}
 	void MovePopupToFront(VPANEL) { STUB; }
 	void MovePopupToBack(VPANEL) { STUB; }
 	void SolveTraverse(VPANEL, bool) { STUB; }
 	void PaintTraverse(VPANEL) { STUB; }
 	void EnableMouseCapture(VPANEL, bool) { STUB; }
-	void GetWorkspaceBounds(int &, int &, int &, int &) { STUB; }
-	void GetAbsoluteWindowBounds(int &, int &, int &, int &) { STUB; }
-	void GetProportionalBase(int &, int &) { STUB; }
+	void GetWorkspaceBounds(int &x, int &y, int &wide, int &tall)
+	{
+		x = y = wide = tall = 0;
+		STUB;
+	}
+	void GetAbsoluteWindowBounds(int &x, int &y, int &wide, int &tall)
+	{
+		x = y = wide = tall = 0;
+		STUB;
+	}
+	void GetProportionalBase(int &width, int &height)
+	{
+		width = 640;
+		height = 480;
+	}
+
 	void CalculateMouseVisible(void) { STUB; }
-	bool NeedKBInput(void) { STUB; return 0; }
+	bool NeedKBInput(void)
+	{
+		return _needKB;
+	}
 	bool HasCursorPosFunctions(void) { STUB; return 0; }
-	void SurfaceGetCursorPos(int &, int &) { STUB; }
-	void SurfaceSetCursorPos(int, int) { STUB; }
+	void SurfaceGetCursorPos(int &x, int &y)
+	{
+		//gEngfuncs.pfnGetMousePos( &x, &y );
+		x = y = 0;
+		STUB;
+	}
+	void SurfaceSetCursorPos(int x, int y)
+	{
+		//gEngfuncs.pfnSetMousePos( x, y );
+	}
 	void DrawTexturedPolygon(void *, int) { STUB; }
 	int GetFontAscent(HFont, wchar_t) { STUB; return 0; }
 	void SetAllowHTMLJavaScript(bool) { STUB; }
 	void SetLanguage(const char *) { STUB; }
 	const char * GetLanguage(void) { STUB; return "english"; }
-	bool DeleteTextureByID(int) { STUB; return false; }
+	bool DeleteTextureByID(int id)
+	{
+		//pglDeleteTexture(1, &id);
+		return true;
+	}
 	void DrawUpdateRegionTextureBGRA(int, int, int, const unsigned char *, int, int) { STUB; }
 	void DrawSetTextureBGRA(int, const unsigned char *, int, int) { STUB; }
-	void CreateBrowser(VPANEL, void *, bool, const char *) { STUB; }
-	void RemoveBrowser(VPANEL, void *) { STUB; }
+	void CreateBrowser(VPANEL, void *, bool, const char *)
+	{
+		STUB;
+	}
+	void RemoveBrowser(VPANEL, void *)
+	{
+		STUB;
+	}
 	void * AccessChromeHTMLController(void) { STUB; return NULL; }
+
+private:
+	VPANEL _embeddedPanel;
+	VPANEL _restrictedPanel;
+	bool _needKB;
+	bool _cursorVisible;
+	bool _cursorLocked;
+	HFont _currentFont;
 };
 
 }

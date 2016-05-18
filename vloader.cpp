@@ -159,6 +159,8 @@ void EXPORT_FUNCTION VLoader_Init()
 	LoadAll( CHROMEHTMLLIB, g_pChromeHtmlModule, g_pChromeHtmlFactory );
 
 
+	g_pVGuiSurface->SetEmbeddedPanel( 0 );
+
 	CreateInterfaceFn fns[] =
 	{
 		OverrideInterfaces,
@@ -214,6 +216,7 @@ void EXPORT_FUNCTION VLoader_ClientDLLFactory(void *module)
 		{
 			g_pClientVGUI->Initialize(fns, sizeof( fns ) / sizeof( void *));
 			g_pClientVGUI->Start();
+			g_pClientVGUI->SetParent(0);
 		}
 	}
 }
