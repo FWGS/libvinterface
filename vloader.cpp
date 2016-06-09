@@ -77,7 +77,7 @@ static bool initialized = false;
 
 IBaseInterface *OverrideInterfaces(const char *pName, int *pReturnCode)
 {
-	if( !stricmp( pName, VGUI_SURFACE_INTERFACE_VERSION ) )
+	if( !strcmp( pName, VGUI_SURFACE_INTERFACE_VERSION ) )
 	{
 		if( pReturnCode ) *pReturnCode = IFACE_OK;
 		return (IBaseInterface *)g_pVGuiSurface;
